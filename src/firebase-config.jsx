@@ -1,17 +1,18 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import {getAuth,GoogleAuthProvider} from 'firebase/auth'
+import { config } from "./config";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBP-GSsKU33GTnpInbxqFv1YVq-p7T4Dx0",
-  authDomain: "chatapp-e422e.firebaseapp.com",
-  projectId: "chatapp-e422e",
-  storageBucket: "chatapp-e422e.firebasestorage.app",
-  messagingSenderId: "163944931210",
-  appId: "1:163944931210:web:36ec45c6013921d70cb273"
+  apiKey: config.firebase_apiKey,
+  authDomain: config.firebase_authDomain,
+  projectId: config.firebase_projectId,
+  storageBucket:config.firebase_storageBucket,
+  messagingSenderId: config.firebase_messagingSenderId,
+  appId: config.firebase_appId
 };
 
 // Initialize Firebase

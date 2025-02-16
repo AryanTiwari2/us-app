@@ -14,7 +14,8 @@ const RoomLogin = (props) =>{
    }
     return (
         <>
-        <button onClick={singOutFromGoogle}>Logout</button>
+        <button onClick={singOutFromGoogle} className="cursor-pointer">Logout</button>
+        <p>See you in next version</p>
         </>
     );
 }

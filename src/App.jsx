@@ -14,7 +14,7 @@ function App() {
     <>
     <Router>
     <Routes>
-          <Route path="/" element={<Home isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />} />
+          <Route path="/us-app" element={<Home isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />} />
         </Routes>
     </Router>
     </>
