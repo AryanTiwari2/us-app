@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+body {
+  background-color: #d6d4d4; /* Change to your desired color */
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+.kanit-bold {
+  font-family: "Kanit", serif;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.grechen-fuemen-regular {
+  font-family: "Grechen Fuemen", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.darumadrop-one-regular {
+  font-family: "Darumadrop One", serif;
+  font-weight: 400;
+  font-style: normal;
+}
