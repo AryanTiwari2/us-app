@@ -7,6 +7,8 @@ import logo1 from '../assets/logo1.png';
 import googleLogo from '../assets/google.png';
 import { constants } from "../constants";
 import { showAlert } from "../utils";
+import show from "../assets/show.png";
+import hide from "../assets/hide.png";
 
 const SignIn = (props) => {
     const { setIsAuthenticated } = props;
@@ -14,6 +16,7 @@ const SignIn = (props) => {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
     const [roomName, setRoomName] = useState('');
+    const [showPassword,setShowPassword] = useState(false);
     // const signUserUsingGoogle = async () => {
     //     const response = await signInWithPopup(auth, provider);
     //     cookies.set('auth-token', response.user.refreshToken);
@@ -96,13 +99,14 @@ const SignIn = (props) => {
                                 </button>
                             </div> */}
                             <div className="flex flex-col items-center justify-center text-center mt-8">
-                                <input required type="text" placeholder="User Name" className="flex justify-center items-center text-center border-1 sm:w-[350px] w-[250px] border-stone-400 pt-2 pb-2 pl-2 pr-2 rounded-xl shadow-sm cursor-pointer bg-slate-50" onChange={(e) => { setUserName(e.target.value) }} value={userName} />
+                                <input required type="text" placeholder="User Name" className="flex justify-center items-center border-1 sm:w-[350px] w-[250px] border-stone-400 pt-2 pb-2 pl-2 pr-2 rounded-xl shadow-sm cursor-pointer bg-slate-50" onChange={(e) => { setUserName(e.target.value) }} value={userName} />
+                            </div>
+                            <div className="relative flex items-center justify-center text-center mt-2">
+                                <input required type={showPassword ? "text" : "password"} placeholder="Password" className="flex justify-center border-1 sm:w-[350px] w-[250px] border-stone-400 pt-2 pb-2 pl-2 pr-2 rounded-xl shadow-sm cursor-pointer bg-slate-50" onChange={(e) => { setPassword(e.target.value) }} value={password} />
+                                <img src={showPassword ? show : hide}  className="absolute sm:ml-[290px] ml-[200px] top-1/2 transform -translate-y-1/2 sm:w-[30px] w-[20px] cursor-pointer" alt="" onClick={()=>{setShowPassword(!showPassword)}} />
                             </div>
                             <div className="flex flex-col items-center justify-center text-center mt-2">
-                                <input required type="text" placeholder="Password" className="flex justify-center items-center text-center border-1 sm:w-[350px] w-[250px] border-stone-400 pt-2 pb-2 pl-2 pr-2 rounded-xl shadow-sm cursor-pointer bg-slate-50" onChange={(e) => { setPassword(e.target.value) }} value={password} />
-                            </div>
-                            <div className="flex flex-col items-center justify-center text-center mt-2">
-                                <input required type="text" placeholder="Room Name" className="flex justify-center items-center text-center border-1 sm:w-[350px] w-[250px] border-stone-400 pt-2 pb-2 pl-2 pr-2 rounded-xl shadow-sm cursor-pointer bg-slate-50" onChange={(e) => { setRoomName(e.target.value) }} value={roomName} />
+                                <input required type="text" placeholder="Room Name" className="flex justify-center items-center border-1 sm:w-[350px] w-[250px] border-stone-400 pt-2 pb-2 pl-2 pr-2 rounded-xl shadow-sm cursor-pointer bg-slate-50" onChange={(e) => { setRoomName(e.target.value) }} value={roomName} />
                             </div>
                             <div className="flex flex-col items-center justify-center text-center mt-2">
                                 <button onClick={signInUserWithUserNamePassword} className={`flex justify-center items-center gap-2 border border-stone-400 sm:w-[350px] w-[250px] pt-2 pb-2 pl-8 pr-8 rounded-xl shadow-sm cursor-pointer ${(!userName || !password || !roomName)? 'bg-slate-400' : 'bg-blue-400'} text-center text-white`} disabled={!userName || !password || !roomName} >Log In</button>
