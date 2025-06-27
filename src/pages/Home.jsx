@@ -9,7 +9,7 @@ const Home = (props)=>{
         {
           !isAuthenticated ? 
           <SignIn setIsAuthenticated = {setIsAuthenticated}/>:
-          <RoomLogin setIsAuthenticated = {setIsAuthenticated}/>
+          <RoomLogin isAuthenticated = {isAuthenticated} setIsAuthenticated = {setIsAuthenticated}/>
         }
         </>
     )

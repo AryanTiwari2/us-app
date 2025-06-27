@@ -49,7 +49,6 @@ const SignIn = (props) => {
         const data = constants['Users'].filter((info)=>{
            return info.UserName==userName;
         });
-        console.log(data);
         if(data.length==0){
             showAlert({
                 type: "error",
