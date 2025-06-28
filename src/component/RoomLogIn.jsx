@@ -4,13 +4,18 @@ import { auth } from "../firebase-config";
 import Cookies from "universal-cookie";
 import Chat from "./Chat";
 import ProfilePages from "./ProfilePages";
+import Movies from "./Movies";
+import Plans from "./Plans";
  import { constants } from "../constants";
+import SideDrawer from "./SideDrawer";
 
 const RoomLogin = (props) =>{
     const {setIsAuthenticated,isAuthenticated} = props;
+    const [color, setColor] = useState('red');
     const cookies = new Cookies();
     const[userName,setUserName] = useState('');
     const[roomName,setRoomName] = useState('');
+    const [currPage,setCurrPage] = useState('profile');
 //    const singOutFromGoogle = async() =>{
 //       await signOut(auth);
 //       cookies.remove('auth-token');
@@ -44,11 +49,21 @@ const RoomLogin = (props) =>{
     return (
         <>
         <div className="h-screen sm:p-[2rem] flex">
+          <SideDrawer color={color} setCurrPage={setCurrPage} getSignOut={getSignOut} currPage={currPage}></SideDrawer>
+          {currPage==="profile" && <div className="w-full md:w-1/2 h-full flex flex-col">
+          <ProfilePages ></ProfilePages>
+          </div>}
+          {currPage==="chat" && <div className="w-full md:w-1/2 h-full flex flex-col">
+          <Chat color={color}setColor={setColor} userName={userName} roomName={roomName}></Chat>
+          </div>}
+          {currPage==="movie" && <div className="w-full md:w-1/2 h-full flex flex-col">
+          <Movies ></Movies>
+          </div>}
+          {currPage==="plan" && <div className="w-full md:w-1/2 h-full flex flex-col">
+          <Plans ></Plans>
+          </div>}
           <div className="hidden md:flex w-1/2 h-full flex-col">
-          <ProfilePages getSignOut={getSignOut}></ProfilePages>
-          </div>
-          <div className="w-full md:w-1/2 h-full flex flex-col">
-          <Chat userName={userName} roomName={roomName}></Chat>
+          <Chat color={color}setColor={setColor} userName={userName} roomName={roomName}></Chat>
           </div>
         </div>
         </>

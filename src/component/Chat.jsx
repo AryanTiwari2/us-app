@@ -7,8 +7,7 @@ import data from '@emoji-mart/data';
 import { FireBaseDBinfo } from "../constants";
 import { getFirestore, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
 
-const Chat = ({userName , roomName}) => {
-    const [color, setColor] = useState('red');
+const Chat = ({userName , roomName, color,setColor}) => {
     const [backgroudColor, setBackgroudColor] = useState('');
     const [bgColor, setBgColor] = useState('');
     const [messageColor , setmessageColor] = useState('');
