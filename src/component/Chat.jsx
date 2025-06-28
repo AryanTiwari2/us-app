@@ -110,7 +110,7 @@ const Chat = ({userName , roomName}) => {
     return (
         <div className={`h-full rounded-sm p-0 lg:p-4`} style={{background:`${bgColor}`}}>
             <div className={`shadow-lg rounded-sm h-full`} style={{background:`${backgroudColor}`}}>
-                <div className="pt-4">
+                <div className="pt-4 sticky top-0 z-10 bg-inherit">
                     <h3 className="text-lg roboto-regular text-center text-white">{userName}</h3>
                     <h4 className="text-sm kanit-bold text-center text-white">{roomName}</h4>
                 </div>
