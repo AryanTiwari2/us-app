@@ -114,7 +114,7 @@ const Chat = ({userName , roomName, color,setColor}) => {
                     <h4 className="text-sm kanit-bold text-center text-white">{roomName}</h4>
                 </div>
 
-                <div className="flex flex-col pt-4 h-[90%] rounded-t-[40px] rounded-b-sm bg-white">
+                <div className="flex flex-col pt-4  md:h-[90%] h-[100%] rounded-t-[40px] rounded-b-sm bg-white">
                     <ChatArea messageColor={messageColor} userName={userName} messages={messages}/>
                     <div className={`border-2 rounded-full flex items-center mt-4`} style={{borderColor:`${backgroudColor} `}}>
                         <button className="p-2" onClick={()=>setPickerOpen(open => !open)}>
