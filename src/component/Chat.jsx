@@ -120,7 +120,7 @@ const Chat = ({userName , roomName, color,setColor}) => {
                         <button className="p-2" onClick={()=>setPickerOpen(open => !open)}>
                             <i className="fa-solid fa-face-smile" style={{ color: `${backgroudColor}` }}></i>
                         </button>
-                        <input type="text" className="libre-baskerville-regular border-none flex-1 text-lg focus:outline-none" style={{color:`${messageColor}`}} value={text} onKeyDown={handleKeyDown} onChange={(e)=>setText(e.target.value)}/>
+                        <input type="text" className="libre-baskerville-regular border-none flex-1 text-lg focus:outline-none" style={{color:`${messageColor}`}} value={text} onKeyDown={handleKeyDown} onChange={(e)=>setText(e.target.value)} autoComplete="off" inputMode="text" autoCorrect="off" spellCheck="true"/>
                         <button className={`p-2 rounded-full`} style={{background:`${backgroudColor}`}} onClick={handleInputClick}>
                             <img src={send} alt="send" className="w-6 h-6 lg:w-6 lg:h-6 rounded-full" />
                         </button>
