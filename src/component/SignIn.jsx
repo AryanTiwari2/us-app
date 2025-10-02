@@ -76,6 +76,9 @@ const SignIn = (props) => {
         }
     }
 
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
     const signInUserWithUserNamePassword = async ()=>{
         setLoading(true);
         if(!userName || !password || !roomName) return;
@@ -84,7 +87,7 @@ const SignIn = (props) => {
         if(responseBody){
             cookies.set(cookieName.authToken, responseBody?.token,
                 {
-                    expires: 1, // expires in 1 day
+                    expires: tomorrow, // expires in 1 day
                     path: "/", // available on all paths
                 }
             );
@@ -108,7 +111,7 @@ const SignIn = (props) => {
         if(responseBody){
             cookies.set(cookieName.authToken, responseBody?.token,
                 {
-                    expires: 1, // expires in 1 day
+                    expires: tomorrow, // expires in 1 day
                     path: "/", // available on all paths
                 }
             );
