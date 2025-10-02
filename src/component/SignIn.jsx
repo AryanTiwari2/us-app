@@ -5,10 +5,11 @@ import Cookies from "universal-cookie";
 import signInBackground from '../assets/signInBackground.jpg'
 import logo1 from '../assets/logo1.png';
 import googleLogo from '../assets/google.png';
-import { constants } from "../constants";
+import { apiConfig, constants, cookieName } from "../constants";
 import { showAlert } from "../utils";
 import show from "../assets/show.png";
 import hide from "../assets/hide.png";
+import axios from "axios";
 
 const SignIn = (props) => {
     const { setIsAuthenticated } = props;
@@ -17,11 +18,7 @@ const SignIn = (props) => {
     const [password, setPassword] = useState('');
     const [roomName, setRoomName] = useState('');
     const [showPassword,setShowPassword] = useState(false);
-    // const signUserUsingGoogle = async () => {
-    //     const response = await signInWithPopup(auth, provider);
-    //     cookies.set('auth-token', response.user.refreshToken);
-    //     setIsAuthenticated(response.user.refreshToken);
-    // }
+    const [loading , setLoading] = useState(false);
 
     const xorEncrypt = (text, key) =>{
         const keyCodes = Array.from(key).map(c => c.charCodeAt(0));
@@ -31,6 +28,32 @@ const SignIn = (props) => {
           encrypted += ('0' + charCode.toString(16)).slice(-2);
         }
         return encrypted;
+    }
+
+    const  loginUserIntoSystem = async (userName, password , roomName) => {
+        try{
+            const config = {
+                url: apiConfig.backendbaseUrl + apiConfig.path.login,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: {
+                    username : userName,
+                    password : password,
+                    roomName: roomName
+                }
+            }
+            const response = await axios(config)
+            return response.data;
+        }catch(error){
+            console.log(error);
+            showAlert({
+                type: "error",
+                message: error?.response?.data?.message
+            });
+            return;
+        }
     }
 
     const xorDecrypt = (encrypted, key) =>{
@@ -44,40 +67,26 @@ const SignIn = (props) => {
         return decrypted;
       }
 
-    const signInUserWithUserNamePassword =()=>{
+    const signInUserWithUserNamePassword = async ()=>{
+        setLoading(true);
         if(!userName || !password || !roomName) return;
-        const data = constants['Users'].filter((info)=>{
-           return info.UserName==userName;
-        });
-        if(data.length==0){
-            showAlert({
-                type: "error",
-                message: "Invalid User Name Entered!!!"
-            })
-            return;
+        const responseBody = await loginUserIntoSystem(userName, password, roomName);
+        setLoading(false);
+        if(responseBody){
+            cookies.set(cookieName.authToken, responseBody?.token);
+            setIsAuthenticated(responseBody?.token);
         }
-        if(data[0].Password!=password){
-            showAlert({
-                type: "error",
-                message: "Wrong Password Enter!!!"
-            });
-            return;
-        }
-        if(!constants.Rooms.includes(roomName)){
-            showAlert({
-                type: "error",
-                message: "No room  exists!!!"
-            });
-            return;
-        }
-        const str = userName + ',' + roomName;
-        const encryptedString = xorEncrypt(str, constants.secretKey);
-        cookies.set("auth-token",encryptedString,{ path: '/', maxAge: 2 * 60 * 60 });
-        setIsAuthenticated(encryptedString);
     }
 
     return (
         <>
+           {
+                loading && (
+                    <div className="loader-overlay">
+                        <div className="spinner"></div>
+                    </div>
+                )
+           }
             <div className="overflow-hidden h-screen sm:p-[2rem] flex items-center justify-center">
                 <div className="flex justify-center items-center h-full w-full shadow-lg">
                     <div className="relative bg-pink-50 flex-1 bg-blue-300 h-32 flex justify-center items-center"

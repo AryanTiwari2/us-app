@@ -6,8 +6,10 @@ import Chat from "./Chat";
 import ProfilePages from "./ProfilePages";
 import Movies from "./Movies";
 import Plans from "./Plans";
- import { constants } from "../constants";
+ import { apiConfig, constants } from "../constants";
 import SideDrawer from "./SideDrawer";
+import { cookieName } from "../constants";
+import axios from "axios";
 
 const RoomLogin = (props) =>{
     const {setIsAuthenticated,isAuthenticated} = props;
@@ -16,12 +18,7 @@ const RoomLogin = (props) =>{
     const[userName,setUserName] = useState('');
     const[roomName,setRoomName] = useState('');
     const [currPage,setCurrPage] = useState('profile');
-//    const singOutFromGoogle = async() =>{
-//       await signOut(auth);
-//       cookies.remove('auth-token');
-//       setIsAuthenticated(null);
-
-//    }
+    const [loading , setLoading] = useState(false);
 
    const xorDecrypt = (encrypted, key) =>{
     const keyCodes = Array.from(key).map(c => c.charCodeAt(0));
@@ -38,16 +35,54 @@ const RoomLogin = (props) =>{
     return decrypted;
   }
 
+  const fetchData = async ()=>{
+    try{
+      const token = cookies.get(cookieName.authToken);
+    const config = {
+        url: apiConfig.backendbaseUrl + apiConfig.path.parseToken,
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'token': token
+        },
+    }
+    const response = await axios(config)
+    return response.data;
+    }catch(error){
+        console.log(error);
+        return;
+    }
+  }
+
+  const getUserInfo = async ()=>{
+    setLoading(true);
+    const responseBody = await fetchData();
+    setLoading(false);
+    if(!responseBody){
+      setIsAuthenticated(null);
+      return;
+    }
+    setUserName(responseBody["username"]);
+    setRoomName(responseBody["roomName"]);
+  }
+
   useEffect(()=>{
-     xorDecrypt(isAuthenticated,constants["secretKey"]);
+     getUserInfo();
   },[]);
 
    const getSignOut=()=>{
-     cookies.remove('auth-token');
+     cookies.remove(cookieName.authToken);
      setIsAuthenticated(null);
    }
     return (
         <>
+        {
+                loading && (
+                    <div className="loader-overlay">
+                        <div className="spinner"></div>
+                    </div>
+                )
+           }
         <div className="h-screen sm:p-[2rem] flex">
           <SideDrawer color={color} setCurrPage={setCurrPage} getSignOut={getSignOut} currPage={currPage}></SideDrawer>
           {currPage==="profile" && <div className="w-full md:w-1/2 h-full flex flex-col">

@@ -2,7 +2,6 @@ import React,{useState,useEffect} from "react";
 
 const TextBox = ({message,userName, currUserName,messageColor}) =>{
    const isCurrentUser = userName === currUserName;
-   console.log(userName,currUserName)
 
   return (
     <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} mb-3`}>
