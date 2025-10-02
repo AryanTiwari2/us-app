@@ -82,7 +82,12 @@ const SignIn = (props) => {
         const responseBody = await loginUserIntoSystem(userName, password, roomName);
         setLoading(false);
         if(responseBody){
-            cookies.set(cookieName.authToken, responseBody?.token);
+            cookies.set(cookieName.authToken, responseBody?.token,
+                {
+                    expires: 1, // expires in 1 day
+                    path: "/", // available on all paths
+                }
+            );
             setIsAuthenticated(responseBody?.token);
         }
     }
@@ -101,7 +106,12 @@ const SignIn = (props) => {
         const responseBody = await signUpUserIntoSystem(userName, password,confirmPassword, roomName);
         setLoading(false);
         if(responseBody){
-            cookies.set(cookieName.authToken, responseBody?.token);
+            cookies.set(cookieName.authToken, responseBody?.token,
+                {
+                    expires: 1, // expires in 1 day
+                    path: "/", // available on all paths
+                }
+            );
             setIsAuthenticated(responseBody?.token);
         }
     }

@@ -6,7 +6,7 @@ function ChatArea({ messages, messageColor, userName, fetchMoreMessages }) {
     const endRef = useRef(null);
 
     useEffect(() => {
-        endRef.current?.scrollIntoView({ behavior: "smooth" });
+        endRef.current?.scrollIntoView();
     }, [messages]);
 
     const getMessageDate = (msg) => {
