@@ -17,18 +17,11 @@ const SignIn = (props) => {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
     const [roomName, setRoomName] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState(''); 
     const [showPassword,setShowPassword] = useState(false);
+    const [showConfirmPassword,setShowConfirmPassword] = useState(false);
     const [loading , setLoading] = useState(false);
-
-    const xorEncrypt = (text, key) =>{
-        const keyCodes = Array.from(key).map(c => c.charCodeAt(0));
-        let encrypted = '';
-        for (let i = 0; i < text.length; i++) {
-          const charCode = text.charCodeAt(i) ^ keyCodes[i % keyCodes.length];
-          encrypted += ('0' + charCode.toString(16)).slice(-2);
-        }
-        return encrypted;
-    }
+    const [isLoginFlow, setIsLoginFlow] = useState(true);
 
     const  loginUserIntoSystem = async (userName, password , roomName) => {
         try{
@@ -56,16 +49,32 @@ const SignIn = (props) => {
         }
     }
 
-    const xorDecrypt = (encrypted, key) =>{
-        const keyCodes = Array.from(key).map(c => c.charCodeAt(0));
-        let decrypted = '';
-        for (let i = 0; i < encrypted.length; i += 2) {
-          const hexChunk = encrypted.substr(i, 2);
-          const charCode = parseInt(hexChunk, 16) ^ keyCodes[(i / 2) % keyCodes.length];
-          decrypted += String.fromCharCode(charCode);
+    const  signUpUserIntoSystem = async (userName, password ,confirmPassword ,roomName) => {
+        try{
+            const config = {
+                url: apiConfig.backendbaseUrl + apiConfig.path.signIn,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: {
+                    username : userName,
+                    password : password,
+                    roomName: roomName,
+                    confirmPassword: confirmPassword
+                }
+            }
+            const response = await axios(config)
+            return response.data;
+        }catch(error){
+            console.log(error);
+            showAlert({
+                type: "error",
+                message: error?.response?.data?.message
+            });
+            return;
         }
-        return decrypted;
-      }
+    }
 
     const signInUserWithUserNamePassword = async ()=>{
         setLoading(true);
@@ -76,6 +85,37 @@ const SignIn = (props) => {
             cookies.set(cookieName.authToken, responseBody?.token);
             setIsAuthenticated(responseBody?.token);
         }
+    }
+
+    const signUpNewUserWithUserNamePassword = async ()=>{
+        if(!userName || !password || !roomName || !confirmPassword) return;
+        if(password !== confirmPassword){
+            setLoading(false);
+            showAlert({
+                type: "error",
+                message: "Confirm Passwords do not match"
+            })
+            return;
+        }
+        setLoading(true);
+        const responseBody = await signUpUserIntoSystem(userName, password,confirmPassword, roomName);
+        setLoading(false);
+        if(responseBody){
+            cookies.set(cookieName.authToken, responseBody?.token);
+            setIsAuthenticated(responseBody?.token);
+        }
+    }
+
+    const toggleBetweenLoginFlow = () => {
+        if(isLoginFlow){
+             setRoomName('public');
+        }else{
+            setRoomName('');
+        }
+        setIsLoginFlow(!isLoginFlow);
+        setPassword('');
+        setConfirmPassword('');
+        setUserName('');
     }
 
     return (
@@ -113,11 +153,26 @@ const SignIn = (props) => {
                                 <input required type={showPassword ? "text" : "password"} placeholder="Password" className="flex justify-center border-1 sm:w-[350px] w-[250px] border-stone-400 pt-2 pb-2 pl-2 pr-2 rounded-xl shadow-sm cursor-pointer bg-slate-50" onChange={(e) => { setPassword(e.target.value) }} value={password} />
                                 <img src={showPassword ? show : hide}  className="absolute sm:ml-[290px] ml-[200px] top-1/2 transform -translate-y-1/2 sm:w-[30px] w-[20px] cursor-pointer" alt="" onClick={()=>{setShowPassword(!showPassword)}} />
                             </div>
+                            {
+                                !isLoginFlow && (
+                                    <div className="relative flex items-center justify-center text-center mt-2">
+                                        <input required type={showConfirmPassword ? "text" : "password"} placeholder="Confirm Password" className="flex justify-center border-1 sm:w-[350px] w-[250px] border-stone-400 pt-2 pb-2 pl-2 pr-2 rounded-xl shadow-sm cursor-pointer bg-slate-50" onChange={(e) => { setConfirmPassword(e.target.value) }} value={confirmPassword} />
+                                        <img src={showConfirmPassword ? show : hide} className="absolute sm:ml-[290px] ml-[200px] top-1/2 transform -translate-y-1/2 sm:w-[30px] w-[20px] cursor-pointer" alt="" onClick={() => { setShowConfirmPassword(!showConfirmPassword) }} />
+                                    </div>
+                                )
+                            }
                             <div className="flex flex-col items-center justify-center text-center mt-2">
-                                <input required type="text" placeholder="Room Name" className="flex justify-center items-center border-1 sm:w-[350px] w-[250px] border-stone-400 pt-2 pb-2 pl-2 pr-2 rounded-xl shadow-sm cursor-pointer bg-slate-50" onChange={(e) => { setRoomName(e.target.value) }} value={roomName} />
+                                <input required type="text" placeholder={isLoginFlow ?"Room Name" : "Room Name  Ex: public"} className="flex justify-center items-center border-1 sm:w-[350px] w-[250px] border-stone-400 pt-2 pb-2 pl-2 pr-2 rounded-xl shadow-sm cursor-pointer bg-slate-50" onChange={(e) => { setRoomName(e.target.value) }} value={roomName} />
                             </div>
-                            <div className="flex flex-col items-center justify-center text-center mt-2">
+                            {isLoginFlow ? <div className="flex flex-col items-center justify-center text-center mt-2">
                                 <button onClick={signInUserWithUserNamePassword} className={`flex justify-center items-center gap-2 border border-stone-400 sm:w-[350px] w-[250px] pt-2 pb-2 pl-8 pr-8 rounded-xl shadow-sm cursor-pointer ${(!userName || !password || !roomName)? 'bg-slate-400' : 'bg-blue-400'} text-center text-white`} disabled={!userName || !password || !roomName} >Log In</button>
+                            </div>
+                            : <div className="flex flex-col items-center justify-center text-center mt-2">
+                                <button onClick={signUpNewUserWithUserNamePassword} className={`flex justify-center items-center gap-2 border border-stone-400 sm:w-[350px] w-[250px] pt-2 pb-2 pl-8 pr-8 rounded-xl shadow-sm cursor-pointer ${(!userName || !password || !roomName || !confirmPassword)? 'bg-slate-400' : 'bg-blue-400'} text-center text-white`} disabled={!userName || !password || !roomName || !confirmPassword} >Sign Up</button>
+                            </div>
+                            }
+                            <div className="flex flex-col items-center justify-center text-center mt-4">
+                                <p className="text-[10px] text-blue-500 italic cursor-pointer" onClick={() => { toggleBetweenLoginFlow() }}>{isLoginFlow ? "Don't have an account? Sign Up" : "Have an account? Log In"}</p>
                             </div>
                             <div className="flex flex-col items-center justify-center text-center mt-4">
                                 <p className="text-[15px] text-slate-500 italic">Applied terms and conditions</p>

@@ -10,30 +10,19 @@ import Plans from "./Plans";
 import SideDrawer from "./SideDrawer";
 import { cookieName } from "../constants";
 import axios from "axios";
+import Rooms from "./Rooms";
+import Admin from "./Admin";
+import Moderator from "./Moderator";
 
 const RoomLogin = (props) =>{
     const {setIsAuthenticated,isAuthenticated} = props;
-    const [color, setColor] = useState('red');
+    const [color, setColor] = useState('primary');
     const cookies = new Cookies();
     const[userName,setUserName] = useState('');
+    const[userType , setUserType] = useState('');
     const[roomName,setRoomName] = useState('');
     const [currPage,setCurrPage] = useState('profile');
     const [loading , setLoading] = useState(false);
-
-   const xorDecrypt = (encrypted, key) =>{
-    const keyCodes = Array.from(key).map(c => c.charCodeAt(0));
-    let decrypted = '';
-    for (let i = 0; i < encrypted.length; i += 2) {
-      const hexChunk = encrypted.substr(i, 2);
-      const charCode = parseInt(hexChunk, 16) ^ keyCodes[(i / 2) % keyCodes.length];
-      decrypted += String.fromCharCode(charCode);
-    }
-    // console.log("decrypted",decrypted);
-    const value = decrypted.split(',');
-    setUserName(value[0]);
-    setRoomName(value[1]);
-    return decrypted;
-  }
 
   const fetchData = async ()=>{
     try{
@@ -64,6 +53,7 @@ const RoomLogin = (props) =>{
     }
     setUserName(responseBody["username"]);
     setRoomName(responseBody["roomName"]);
+    setUserType(responseBody["userType"]);
   }
 
   useEffect(()=>{
@@ -84,7 +74,7 @@ const RoomLogin = (props) =>{
                 )
            }
         <div className="h-screen sm:p-[2rem] flex">
-          <SideDrawer color={color} setCurrPage={setCurrPage} getSignOut={getSignOut} currPage={currPage}></SideDrawer>
+          <SideDrawer color={color} setCurrPage={setCurrPage} getSignOut={getSignOut} currPage={currPage} userType={userType}></SideDrawer>
           {currPage==="profile" && <div className="w-full md:w-1/2 h-full flex flex-col">
           <ProfilePages ></ProfilePages>
           </div>}
@@ -96,6 +86,15 @@ const RoomLogin = (props) =>{
           </div>}
           {currPage==="plan" && <div className="w-full md:w-1/2 h-full flex flex-col">
           <Plans ></Plans>
+          </div>}
+          {currPage==="rooms" && <div className="w-full md:w-1/2 h-full flex flex-col">
+          <Rooms ></Rooms>
+          </div>}
+          {currPage==="admin" && <div className="w-full md:w-1/2 h-full flex flex-col">
+          <Admin ></Admin>
+          </div>}
+          {currPage==="moderator" && <div className="w-full md:w-1/2 h-full flex flex-col">
+          <Moderator ></Moderator>
           </div>}
           <div className="hidden md:flex w-1/2 h-full flex-col">
           <Chat color={color}setColor={setColor} userName={userName} roomName={roomName}></Chat>

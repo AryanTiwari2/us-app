@@ -1,22 +1,26 @@
 import React, { useEffect, useState, useRef } from "react";
-import { colorMap,allowedColors } from "../constants";
+import { colorMap, allowedColors } from "../constants";
 import ChatArea from "./ChatArea";
 import send from '../assets/send.png';
 import Picker from '@emoji-mart/react'
 import data from '@emoji-mart/data';
 import { FireBaseDBinfo } from "../constants";
-import { getFirestore, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { getFirestore, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp , limit, startAfter, getDocs } from "firebase/firestore";
 
-const Chat = ({userName , roomName, color,setColor}) => {
+const Chat = ({ userName, roomName, color, setColor }) => {
     const [backgroudColor, setBackgroudColor] = useState('');
     const [bgColor, setBgColor] = useState('');
-    const [messageColor , setmessageColor] = useState('');
+    const [messageColor, setmessageColor] = useState('');
     const [text, setText] = useState("");
     const [pickerOpen, setPickerOpen] = useState(false);
     const buttonRef = useRef(null);
     const pickerRef = useRef(null);
     const db = getFirestore();
     const [messages, setMessages] = useState([]);
+    const [lastVisible, setLastVisible] = useState(null);
+    const [hasMore, setHasMore] = useState(true);
+    const scrollRef = useRef();
+    const textLimit = 300;
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -40,9 +44,10 @@ const Chat = ({userName , roomName, color,setColor}) => {
     async function sendMessage() {
         await addDoc(collection(db, FireBaseDBinfo.DB_NAME), {
             text,
-            room_name:roomName,
-            username:userName,
-            createdAt: serverTimestamp()
+            room_name: roomName,
+            username: userName,
+            createdAt: serverTimestamp(),
+            clientCreatedAt: Date.now()
         });
     }
 
@@ -64,13 +69,77 @@ const Chat = ({userName , roomName, color,setColor}) => {
         return unsubscribe;
     }
 
+    const fetchInitialMessages = async () => {
+        const q = query(
+            collection(db, FireBaseDBinfo.DB_NAME),
+            where("room_name", "==", roomName),
+            orderBy("createdAt", "desc"),
+            limit(textLimit)
+        );
+
+        const snapshot = await getDocs(q);
+        const msgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).reverse();
+        setMessages(msgs);
+
+        const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        setLastVisible(lastDoc);
+        if (snapshot.docs.length < textLimit) setHasMore(false);
+    };
+
+    const listenToNewMessages = () => {
+        let q = query(
+            collection(db, FireBaseDBinfo.DB_NAME),
+            where("room_name", "==", roomName),
+            orderBy("createdAt", "desc"),
+            limit(1)
+        );
+
+        return onSnapshot(q, snapshot => {
+            snapshot.docChanges().forEach(change => {
+                if (change.type === "added") {
+                    const newMsg = { id: change.doc.id, ...change.doc.data() };
+                    setMessages(prev => [...prev, newMsg]);
+                }
+            });
+        });
+    };
+
+
+    const fetchMoreMessages = async () => {
+        if (!lastVisible || !hasMore) return;
+
+        const q = query(
+            collection(db, FireBaseDBinfo.DB_NAME),
+            where("room_name", "==", roomName),
+            orderBy("createdAt", "desc"),
+            startAfter(lastVisible),
+            limit(textLimit)
+        );
+
+        const snapshot = await getDocs(q);
+        const olderMsgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).reverse();
+
+        if (olderMsgs.length === 0) setHasMore(false);
+        setMessages(prev => [...olderMsgs, ...prev]);
+        setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
+    };
+
+    // useEffect(() => {
+    //     if (!roomName) return;
+    //     const stop = listenToMessages(roomName, (msgs) => {
+    //         setMessages(msgs);
+    //     });
+
+    //     return () => stop();
+    // }, [roomName]);
+
     useEffect(() => {
         if (!roomName) return;
-        const stop = listenToMessages(roomName, (msgs) => {
-            setMessages(msgs);
-        });
 
-        return () => stop();
+        fetchInitialMessages();
+        const unsubscribe = listenToNewMessages();
+
+        return () => unsubscribe();
     }, [roomName]);
 
 
@@ -81,15 +150,15 @@ const Chat = ({userName , roomName, color,setColor}) => {
     }, [color]);
 
     const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleInputClick();
-    }
-  };
+        if (e.key === 'Enter') {
+            handleInputClick();
+        }
+    };
 
 
-    const changeColor = ()=>{
+    const changeColor = () => {
         const match = text.match(/^color:([a-zA-Z]+)$/);
-        if(!match || !allowedColors.includes(match[[1]])){
+        if (!match || !allowedColors.includes(match[[1]])) {
             return false;
         }
         setColor(match[1]);
@@ -97,31 +166,34 @@ const Chat = ({userName , roomName, color,setColor}) => {
         return true;
     }
 
-    const handleInputClick = () =>{
-        if(changeColor()) {
+    const handleInputClick = () => {
+        if (changeColor()) {
             return;
         }
-        sendMessage(text,roomName,userName);
+        if (text.trim() === '') {
+            return;
+        }
+        sendMessage(text, roomName, userName);
         setText('');
     }
 
 
     return (
-        <div className={`h-full rounded-sm p-0 lg:p-4`} style={{background:`${bgColor}`}}>
-            <div className={`shadow-lg rounded-sm h-full`} style={{background:`${backgroudColor}`}}>
+        <div className={`h-full rounded-sm p-0 lg:p-4`} style={{ background: `${bgColor}` }}>
+            <div className={`shadow-lg rounded-sm h-full`} style={{ background: `${backgroudColor}` }}>
                 <div className="pt-4 sticky top-0 z-10 bg-inherit">
                     <h3 className="text-lg roboto-regular text-center text-white">{userName}</h3>
                     <h4 className="text-sm kanit-bold text-center text-white">{roomName}</h4>
                 </div>
 
                 <div className="flex flex-col pt-4  md:h-[90%] h-[100%] rounded-t-[40px] rounded-b-sm bg-white">
-                    <ChatArea messageColor={messageColor} userName={userName} messages={messages}/>
-                    <div className={`border-2 rounded-full flex items-center mt-4`} style={{borderColor:`${backgroudColor} `}}>
-                        <button className="p-2" onClick={()=>setPickerOpen(open => !open)}>
+                    <ChatArea messageColor={messageColor} userName={userName} messages={messages} fetchMoreMessages={fetchMoreMessages} />
+                    <div className={`border-2 rounded-full flex items-center mt-4`} style={{ borderColor: `${backgroudColor} ` }}>
+                        <button className="p-2" onClick={() => setPickerOpen(open => !open)}>
                             <i className="fa-solid fa-face-smile" style={{ color: `${backgroudColor}` }}></i>
                         </button>
-                        <input type="text" className="libre-baskerville-regular border-none flex-1 text-lg focus:outline-none" style={{color:`${messageColor}`}} value={text} onKeyDown={handleKeyDown} onChange={(e)=>setText(e.target.value)} autoComplete="new-password" inputMode="chatInput" autoCorrect="off" spellCheck="true"/>
-                        <button className={`p-2 rounded-full`} style={{background:`${backgroudColor}`}} onClick={handleInputClick}>
+                        <input type="text" className="libre-baskerville-regular border-none flex-1 text-lg focus:outline-none" style={{ color: `${messageColor}` }} value={text} onKeyDown={handleKeyDown} onChange={(e) => setText(e.target.value)} autoComplete="new-password" inputMode="chatInput" autoCorrect="off" spellCheck="true" />
+                        <button className={`p-2 rounded-full`} style={{ background: `${backgroudColor}` }} onClick={handleInputClick}>
                             <img src={send} alt="send" className="w-6 h-6 lg:w-6 lg:h-6 rounded-full" />
                         </button>
                     </div>

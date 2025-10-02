@@ -1,7 +1,8 @@
 import { useState } from "react";
 import logo1 from '../assets/logo1.png'
+import { UserType } from "../constants";
 
-export default function SideDrawer({setCurrPage,getSignOut,currPage}) {
+export default function SideDrawer({setCurrPage,getSignOut,currPage,userType}) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -62,6 +63,27 @@ export default function SideDrawer({setCurrPage,getSignOut,currPage}) {
             <i class="fa-solid fa-lightbulb"></i>
             <p className="libre-baskerville-bold text-lg">Plans</p>
           </button>
+
+          <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage==='plan' && 'bg-gray-200'}`}
+          onClick={()=>{setCurrPage('rooms'); setIsOpen(false);}}
+          >
+            <i class="fa-solid fa-house"></i>
+            <p className="libre-baskerville-bold text-lg">Rooms</p>
+          </button>
+
+          {userType === UserType.ADMIN && <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage === 'plan' && 'bg-gray-200'}`}
+            onClick={() => { setCurrPage('admin'); setIsOpen(false); }}
+          >
+            <i class="fa-solid fa-lock"></i>
+            <p className="libre-baskerville-bold text-lg">Admin Panel</p>
+          </button>}
+
+          {userType === UserType.MODERATOR && <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage === 'plan' && 'bg-gray-200'}`}
+            onClick={() => { setCurrPage('moderator'); setIsOpen(false); }}
+          >
+            <i class="fa-solid fa-lock"></i>
+            <p className="libre-baskerville-bold text-lg">Moderator Panel</p>
+          </button>}
 
           <button className="flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-200 cursor-pointer"
           onClick={getSignOut}>
