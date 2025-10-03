@@ -51,24 +51,6 @@ const Chat = ({ userName, roomName, color, setColor }) => {
         });
     }
 
-    function listenToMessages(room_name, callback) {
-        const q = query(
-            collection(db, FireBaseDBinfo.DB_NAME),
-            where("room_name", "==", room_name),
-            orderBy("createdAt", "desc")
-        );
-
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const messages = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            })).reverse();
-            callback(messages);
-        });
-
-        return unsubscribe;
-    }
-
     const fetchInitialMessages = async () => {
         const q = query(
             collection(db, FireBaseDBinfo.DB_NAME),
@@ -139,9 +121,9 @@ const Chat = ({ userName, roomName, color, setColor }) => {
         let unsubscribe = () => { };
 
         (async () => {
-            const since = await fetchInitialMessages();   // ✅ wait here
-            console.log("since timestamp:", since);       // now it’s the {seconds, nanoseconds} object
-            unsubscribe = listenToNewMessages(since);     // pass the real timestamp
+            const since = await fetchInitialMessages();  
+            console.log("since timestamp:", since);   
+            unsubscribe = listenToNewMessages(since);
         })();
 
         return () => unsubscribe();

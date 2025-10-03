@@ -80,3 +80,33 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.permanent-marker-regular {
+  font-family: "Permanent Marker", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.permanent-marker-light {
+  font-family: "Permanent Marker", cursive;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.permanent-marker-ultralight {
+  font-family: "Permanent Marker", cursive;
+  font-weight: 100;
+  font-style: normal;
+}
+
+.float {
+  display: inline-block;
+  animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+

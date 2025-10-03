@@ -48,7 +48,7 @@ const RoomLogin = (props) =>{
     const responseBody = await fetchData();
     setLoading(false);
     if(!responseBody){
-      setIsAuthenticated(null);
+      getSignOut();
       return;
     }
     setUserName(responseBody["username"]);
@@ -91,7 +91,7 @@ const RoomLogin = (props) =>{
           <Rooms ></Rooms>
           </div>}
           {currPage==="admin" && <div className="w-full md:w-1/2 h-full flex flex-col">
-          <Admin ></Admin>
+          <Admin userType={userType} setCurrPage={setCurrPage} ></Admin>
           </div>}
           {currPage==="moderator" && <div className="w-full md:w-1/2 h-full flex flex-col">
           <Moderator ></Moderator>
