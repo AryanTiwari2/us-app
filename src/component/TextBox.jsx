@@ -9,7 +9,6 @@ const TextBox = ({ message, userName, currUserName, messageColor, createdAt, cli
   }
   else {
     formattedTime = new Date(clientCreatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    console.log("this:",formattedTime);
   }
 
   return (

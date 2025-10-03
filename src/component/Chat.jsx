@@ -5,7 +5,7 @@ import send from '../assets/send.png';
 import Picker from '@emoji-mart/react'
 import data from '@emoji-mart/data';
 import { FireBaseDBinfo } from "../constants";
-import { getFirestore, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp , limit, startAfter, getDocs } from "firebase/firestore";
+import { getFirestore, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, limit, startAfter, getDocs } from "firebase/firestore";
 
 const Chat = ({ userName, roomName, color, setColor }) => {
     const [backgroudColor, setBackgroudColor] = useState('');
@@ -20,7 +20,7 @@ const Chat = ({ userName, roomName, color, setColor }) => {
     const [lastVisible, setLastVisible] = useState(null);
     const [hasMore, setHasMore] = useState(true);
     const scrollRef = useRef();
-    const textLimit = 300;
+    const textLimit = 200;
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -84,21 +84,31 @@ const Chat = ({ userName, roomName, color, setColor }) => {
         const lastDoc = snapshot.docs[snapshot.docs.length - 1];
         setLastVisible(lastDoc);
         if (snapshot.docs.length < textLimit) setHasMore(false);
+
+        const newestTimestamp = await msgs[msgs.length - 1].createdAt
+        return newestTimestamp;
     };
 
-    const listenToNewMessages = () => {
+    const listenToNewMessages = (since) => {
+        let currentSince = since;
         let q = query(
             collection(db, FireBaseDBinfo.DB_NAME),
             where("room_name", "==", roomName),
-            orderBy("createdAt", "desc"),
-            limit(1)
+            where("createdAt", ">=", currentSince),
+            orderBy("createdAt", "asc")
         );
 
         return onSnapshot(q, snapshot => {
             snapshot.docChanges().forEach(change => {
                 if (change.type === "added") {
                     const newMsg = { id: change.doc.id, ...change.doc.data() };
-                    setMessages(prev => [...prev, newMsg]);
+                    setMessages(prev => {
+                        if (prev.some(m => m.id === newMsg.id)) return prev;
+                        return [...prev, newMsg];
+                    });
+                    if (newMsg.createdAt && newMsg.createdAt.toMillis) {
+                        currentSince = newMsg.createdAt;
+                    }
                 }
             });
         });
@@ -124,20 +134,15 @@ const Chat = ({ userName, roomName, color, setColor }) => {
         setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
     };
 
-    // useEffect(() => {
-    //     if (!roomName) return;
-    //     const stop = listenToMessages(roomName, (msgs) => {
-    //         setMessages(msgs);
-    //     });
-
-    //     return () => stop();
-    // }, [roomName]);
-
     useEffect(() => {
         if (!roomName) return;
+        let unsubscribe = () => { };
 
-        fetchInitialMessages();
-        const unsubscribe = listenToNewMessages();
+        (async () => {
+            const since = await fetchInitialMessages();   // ✅ wait here
+            console.log("since timestamp:", since);       // now it’s the {seconds, nanoseconds} object
+            unsubscribe = listenToNewMessages(since);     // pass the real timestamp
+        })();
 
         return () => unsubscribe();
     }, [roomName]);
