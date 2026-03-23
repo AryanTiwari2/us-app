@@ -38,8 +38,9 @@ export default function SideDrawer({ setCurrPage, getSignOut, currPage, userType
 
           <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage === 'profile' && 'bg-gray-200'}`}
             onClick={() => {
-              setCurrPage('profile'); setIsOpen(false);
+              setIsOpen(false);
               setProfileUser(userName)
+              setCurrPage('profile')
             }}
           >
             <i className="fa-solid fa-user"></i>

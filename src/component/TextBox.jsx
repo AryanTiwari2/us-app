@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const TextBox = ({ message, userName, currUserName, messageColor, createdAt, clientCreatedAt }) => {
+const TextBox = ({ message, userName, currUserName, messageColor, createdAt, clientCreatedAt, setProfileUser }) => {
   const isCurrentUser = userName === currUserName;
   let formattedTime = "";
   if (createdAt?.seconds) {
@@ -27,7 +27,7 @@ const TextBox = ({ message, userName, currUserName, messageColor, createdAt, cli
           </p>
         )}
       </div>
-      <p className="text-xs mb-1 text-gray-400">{userName}</p>
+      <p onClick={() => setProfileUser(userName)} className="text-xs mb-1 text-gray-400 cursor-pointer">{userName}</p>
     </div>
 
   );

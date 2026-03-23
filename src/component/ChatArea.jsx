@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import TextBox from "./TextBox";
 
-function ChatArea({ messages, messageColor, userName, fetchMoreMessages }) {
+function ChatArea({ messages, messageColor, userName, fetchMoreMessages, setProfileUser }) {
     const scrollRef = useRef();
     const endRef = useRef(null);
 
@@ -58,6 +58,7 @@ function ChatArea({ messages, messageColor, userName, fetchMoreMessages }) {
                             createdAt={data.createdAt}
                             clientCreatedAt={data.clientCreatedAt}
                             messageColor={messageColor}
+                            setProfileUser={setProfileUser}
                         />
                     </React.Fragment>
                 );

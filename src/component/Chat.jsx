@@ -7,7 +7,7 @@ import data from '@emoji-mart/data';
 import { FireBaseDBinfo } from "../constants";
 import { getFirestore, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, limit, startAfter, getDocs } from "firebase/firestore";
 
-const Chat = ({ userName, roomName, color, setColor }) => {
+const Chat = ({ userName, roomName, color, setColor, setProfileUser }) => {
     const [backgroudColor, setBackgroudColor] = useState('');
     const [bgColor, setBgColor] = useState('');
     const [messageColor, setmessageColor] = useState('');
@@ -122,7 +122,6 @@ const Chat = ({ userName, roomName, color, setColor }) => {
 
         (async () => {
             const since = await fetchInitialMessages();  
-            console.log("since timestamp:", since);   
             unsubscribe = listenToNewMessages(since);
         })();
 
@@ -174,7 +173,7 @@ const Chat = ({ userName, roomName, color, setColor }) => {
                 </div>
 
                 <div className="flex flex-col pt-4  md:h-[90%] h-[100%] rounded-t-[40px] rounded-b-sm bg-white">
-                    <ChatArea messageColor={messageColor} userName={userName} messages={messages} fetchMoreMessages={fetchMoreMessages} />
+                    <ChatArea messageColor={messageColor} userName={userName} messages={messages} fetchMoreMessages={fetchMoreMessages} setProfileUser={setProfileUser}/>
                     <div className={`border-2 rounded-full flex items-center mt-4`} style={{ borderColor: `${backgroudColor} ` }}>
                         <button className="p-2" onClick={() => setPickerOpen(open => !open)}>
                             <i className="fa-solid fa-face-smile" style={{ color: `${backgroudColor}` }}></i>

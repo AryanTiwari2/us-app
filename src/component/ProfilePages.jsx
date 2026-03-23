@@ -6,20 +6,16 @@ import { colorMap } from "../constants";
 import axios from "axios";
 
 
-const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage }) => {
+const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage, getSignOut, setColor }) => {
   const cookies = new Cookies();
   const [roomNameFromApi, setRoomNameFromApi] = useState('');
   const [userTypeFromApi, setUserTypeFromApi] = useState('');
-  const [userTheme, setUserTheme] = useState('');
+  const [userTheme, setUserTheme] = useState('pink');
   const [gender, setGender] = useState('');
   const [userNameFromApi, setUserNameFromApi] = useState('');
   const [description, setDescription] = useState('');
   const [name, setName] = useState('');
-  const [image, setImage] = useState('');
-  const [instagram, setInstagram] = useState("");
-  const [github, setGithub] = useState("");
-  const [facebook, setFacebook] = useState("");
-  const [twitter, setTwitter] = useState("");
+  const [image, setImage] = useState('https://picsum.photos/200/200');
   const [backgroundColor, setBackgroudColor] = useState('pink');
   const [textColor, setTextColor] = useState('#FFF8F9');
 
@@ -27,6 +23,15 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage }) => {
   const [isEditingGender, setIsEditingGender] = useState(false);
   const [isEditingAbout, setIsEditingAbout] = useState(false);
   const fileInputRef = useRef(null);
+  const [editingSocial, setEditingSocial] = useState(null);
+  const [socialValues, setSocialValues] = useState({ twitter: "", instagram: "", github: "", facebook: "" });
+
+  const socials = [
+    { key: 'twitter', icon: 'fa-brands fa-twitter' },
+    { key: 'instagram', icon: 'fa-brands fa-instagram' },
+    { key: 'github', icon: 'fa-brands fa-github' },
+    { key: 'facebook', icon: 'fa-brands fa-facebook' },
+  ];
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -52,12 +57,14 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage }) => {
       return response.data;
     } catch (error) {
       console.log(error);
+      getSignOut();
       return;
     }
   }
 
   const updateProfileForTheUser = async () => {
     try {
+      if (userNameFromApi !== userName) return;
       const token = cookies.get(cookieName.authToken);
       const config = {
         url: apiConfig.backendbaseUrl + apiConfig.path.updateProfile,
@@ -70,17 +77,21 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage }) => {
           name: name,
           gender: getGenderValue(gender),
           description: description,
+          themeColor: userTheme,
+          socialLink: transformSocialLinks()
         }
       }
       const response = await axios(config);
       return response.data;
     } catch (error) {
       console.log(error);
+      getSignOut();
       return;
     }
   }
 
   const updateProfile = async () => {
+    if (userNameFromApi !== userName) return;
     setLoading(true);
     const responseBody = await updateProfileForTheUser();
     setLoading(false);
@@ -102,6 +113,7 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage }) => {
     const textCol = colorEntry.textColor;
     setBackgroudColor(background);
     setTextColor(textCol);
+    setColor(responseBody["themeColor"]);
   }
 
   const setGenderOfTheUser = (gender) => {
@@ -122,26 +134,30 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage }) => {
   }
 
   const setSocialLinks = (socialLinks) => {
-    const pairs = socialLinks.split(";").filter(Boolean);
+    const pairs = socialLinks.split("++").filter(Boolean);
     pairs.forEach((pair) => {
-      const [key, value] = pair.split(":");
+      const [key, value] = pair.split("->");
       switch (key) {
         case "instagram":
-          setInstagram(value);
+          setSocialValues(prev => ({ ...prev, instagram: value }));
           break;
         case "github":
-          setGithub(value);
+          setSocialValues(prev => ({ ...prev, github: value }));
           break;
         case "facebook":
-          setFacebook(value);
+          setSocialValues(prev => ({ ...prev, facebook: value }));
           break;
         case "twitter":
-          setTwitter(value);
+          setSocialValues(prev => ({ ...prev, twitter: value }));
           break;
         default:
           break;
       }
     });
+  }
+
+  const transformSocialLinks = () => {
+    return `${socialValues.instagram ? `instagram->${socialValues.instagram}` : ''}${socialValues.github ? `++github->${socialValues.github}` : ''}${socialValues.facebook ? `++facebook->${socialValues.facebook}` : ''}${socialValues.twitter ? `++twitter->${socialValues.twitter}` : ''}`;
   }
 
   const fetchUserProfileData = async () => {
@@ -166,11 +182,26 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage }) => {
     const textCol = colorEntry.textColor;
     setBackgroudColor(background);
     setTextColor(textCol);
+    setColor(responseBody["themeColor"]);
   }
 
   useEffect(() => {
     fetchUserProfileData();
   }, []);
+
+  const popupRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (popupRef.current && !popupRef.current.contains(e.target)) {
+        setEditingSocial(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
 
   return (
     <div className="rounded-xs flex justify-center h-full" style={{ background: backgroundColor }}>
@@ -184,21 +215,20 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage }) => {
               className="md:h-32 md:w-32 h-28 w-28 rounded-full object-cover cursor-pointer"
               style={{ border: `4px solid #FFF8F9` }}
               alt="profile"
-              onClick={() => fileInputRef.current.click()}
             />
             <input
               type="file"
               accept="image/*"
               ref={fileInputRef}
               className="hidden"
-              onChange={handleImageChange}
+              onChange={userNameFromApi === userName ? handleImageChange : () => { }}
             />
             <p
               className="permanent-marker-ultralight text-[10px] cursor-pointer"
               style={{ color: textColor }}
-              onClick={() => fileInputRef.current.click()}
+              onClick={() => { if (userNameFromApi === userName) fileInputRef.current.click() }}
             >
-              Change picture
+              {userNameFromApi === userName ? "Change picture" : "View picture"}
             </p>
           </div>
 
@@ -211,8 +241,12 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage }) => {
             {/* Edit name / Save toggle — same position, just text changes */}
             <p
               className="permanent-marker-ultralight text-[10px] cursor-pointer mb-1 text-right self-end"
-              style={{ color: textColor }}
+              style={{
+                color: textColor,
+                visibility: userNameFromApi === userName ? 'visible' : 'hidden',
+              }}
               onClick={() => {
+                if (userNameFromApi !== userName) return;
                 if (isEditingName) {
                   updateProfile();
                   setIsEditingName(false);
@@ -291,9 +325,9 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage }) => {
                 <p
                   className="permanent-marker-ultralight text-[10px] cursor-pointer"
                   style={{ color: textColor }}
-                  onClick={() => setIsEditingGender(true)}
+                  onClick={() => userNameFromApi === userName && setIsEditingGender(true)}
                 >
-                  {gender} ✎
+                  {gender} {userNameFromApi === userName && '✎'}
                 </p>
               )}
             </div>
@@ -318,10 +352,10 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage }) => {
               style={{ background: textColor, color: backgroundColor }}
             >
               About me
-              <i
+              {userNameFromApi === userName && <i
                 className="fa-solid fa-pen text-sm cursor-pointer"
                 onClick={() => setIsEditingAbout(true)}
-              ></i>
+              ></i>}
             </h2>
             <div
               className="w-full rounded-b-lg px-4 pb-4 pt-4"
@@ -351,7 +385,7 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage }) => {
                 <p
                   className="text-sm permanent-marker-ultralight cursor-pointer"
                   style={{ color: textColor }}
-                  onClick={() => setIsEditingAbout(true)}
+                  onClick={() => userNameFromApi === userName && setIsEditingAbout(true)}
                 >
                   {description}
                 </p>
@@ -360,22 +394,81 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage }) => {
           </div>
 
           <p className="text-[24px] permanent-marker-regular mt-4" style={{ color: textColor }}>You can find me:</p>
+          <div ref={popupRef} className="flex space-x-6 mt-4 mb-6 relative">
+            {socials.map(({ key, icon }) => (
+              <div key={key} className="relative">
+                <i
+                  className={`${icon} text-3xl cursor-pointer float`}
+                  style={{ color: textColor }}
+                  onClick={() => {
+                    if (userNameFromApi === userName) {
+                      setEditingSocial(editingSocial === key ? null : key);
+                    } else if (socialValues[key]) {
+                      window.open(socialValues[key], '_blank');
+                    }
+                  }}
 
-          <div className="flex space-x-6 mt-4 mb-6">
-            <a href={twitter} className="text-3xl float" style={{ color: textColor }}>
-              <i className="fa-brands fa-twitter"></i>
-            </a>
-            <a href={instagram} className="text-3xl float" style={{ color: textColor }}>
-              <i className="fa-brands fa-instagram"></i>
-            </a>
-            <a href={github} className="text-3xl float" style={{ color: textColor }}>
-              <i className="fa-brands fa-github"></i>
-            </a>
-            <a href={facebook} className="text-3xl float" style={{ color: textColor }}>
-              <i className="fa-brands fa-facebook"></i>
-            </a>
+                />
+
+                {editingSocial === key && (
+                  <div
+                    className="absolute bottom-10 left-1/2 -translate-x-1/2 rounded-xl p-3 flex flex-col gap-2 z-50"
+                    style={{
+                      background: textColor,
+                      border: `1px solid ${backgroundColor}`,
+                      minWidth: '180px',
+                    }}
+                  >
+                    {socialValues[key] && (
+                      <a
+                        href={socialValues[key]}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[12px] permanent-marker-light flex items-center gap-2"
+                        style={{ color: backgroundColor }}
+                      >
+                        <i className="fa-solid fa-arrow-up-right-from-square text-[11px]" />
+                        Visit
+                      </a>
+                    )}
+
+                    {socialValues[key] && (
+                      <div style={{ height: '0.5px', background: backgroundColor, opacity: 0.3 }} />
+                    )}
+                    <input
+                      className="text-[11px] permanent-marker-ultralight outline-none rounded px-2 py-1 w-full"
+                      style={{ background: backgroundColor, color: textColor }}
+                      placeholder={`${key} URL`}
+                      value={socialValues[key] || ''}
+                      onChange={(e) => setSocialValues({ ...socialValues, [key]: e.target.value })}
+                    />
+
+                    <button
+                      className="text-[11px] permanent-marker-light self-end px-2 py-1 rounded"
+                      style={{ background: backgroundColor, color: textColor }}
+                      onClick={() => {
+                        updateProfile();
+                        setEditingSocial(null);
+                      }}
+                    >
+                      Save ✓
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
+        {userTheme && userNameFromApi === userName && <ThemePicker
+          backgroundColor={backgroundColor}
+          textColor={textColor}
+          setUserTheme={setUserTheme}
+          updateProfile={updateProfile}
+          setBackgroudColor={setBackgroudColor}
+          setTextColor={setTextColor}
+          userTheme={userTheme}
+          popupRef={popupRef}
+        ></ThemePicker>}
       </div>
     </div >
   )

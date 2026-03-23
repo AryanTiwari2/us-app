@@ -63,6 +63,10 @@ const RoomLogin = (props) =>{
      console.log("username" , userName , profileUser);
   },[]);
 
+  useEffect(()=>{
+    setCurrPage('profile');
+  },[profileUser]);
+
    const getSignOut=()=>{
      cookies.remove(cookieName.authToken);
      setIsAuthenticated(null);
@@ -87,11 +91,19 @@ const RoomLogin = (props) =>{
           ></SideDrawer>
 
 
+
           {currPage==="profile" && (profileUser || userName) && <div className="w-full md:w-1/2 h-full flex flex-col">
-          <ProfilePages profileUser={profileUser} userName={userName} setLoading={setLoading} setCurrPage={setCurrPage}></ProfilePages>
+          <ProfilePages 
+          profileUser={profileUser} 
+          userName={userName} 
+          setLoading={setLoading} 
+          setCurrPage={setCurrPage}
+          getSignOut={getSignOut} 
+          setColor={setColor}
+          ></ProfilePages>
           </div>}
           {currPage==="chat" && <div className="w-full md:w-1/2 h-full flex flex-col">
-          <Chat color={color}setColor={setColor} userName={userName} roomName={roomName}></Chat>
+          <Chat color={color} setColor={setColor} userName={userName} roomName={roomName} setProfileUser={setProfileUser}></Chat>
           </div>}
           {currPage==="movie" && <div className="w-full md:w-1/2 h-full flex flex-col">
           <Movies ></Movies>
@@ -109,7 +121,7 @@ const RoomLogin = (props) =>{
           <Moderator ></Moderator>
           </div>}
           <div className="hidden md:flex w-1/2 h-full flex-col">
-          <Chat color={color}setColor={setColor} userName={userName} roomName={roomName}></Chat>
+          <Chat color={color}setColor={setColor} userName={userName} roomName={roomName} setProfileUser={setProfileUser}></Chat>
           </div>
         </div>
         </>
