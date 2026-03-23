@@ -21,8 +21,9 @@ const RoomLogin = (props) =>{
     const[userName,setUserName] = useState('');
     const[userType , setUserType] = useState('');
     const[roomName,setRoomName] = useState('');
-    const [currPage,setCurrPage] = useState('profile');
+    const [currPage,setCurrPage] = useState('chat');
     const [loading , setLoading] = useState(false);
+    const [profileUser , setProfileUser] = useState('');
 
   const fetchData = async ()=>{
     try{
@@ -52,12 +53,14 @@ const RoomLogin = (props) =>{
       return;
     }
     setUserName(responseBody["username"]);
+    setProfileUser(responseBody["username"]);
     setRoomName(responseBody["roomName"]);
     setUserType(responseBody["userType"]);
   }
 
   useEffect(()=>{
-     getUserInfo();
+    getUserInfo();
+     console.log("username" , userName , profileUser);
   },[]);
 
    const getSignOut=()=>{
@@ -74,9 +77,18 @@ const RoomLogin = (props) =>{
                 )
            }
         <div className="h-screen sm:p-[2rem] flex">
-          <SideDrawer color={color} setCurrPage={setCurrPage} getSignOut={getSignOut} currPage={currPage} userType={userType}></SideDrawer>
-          {currPage==="profile" && <div className="w-full md:w-1/2 h-full flex flex-col">
-          <ProfilePages ></ProfilePages>
+          <SideDrawer color={color} 
+          setCurrPage={setCurrPage} 
+          getSignOut={getSignOut} 
+          currPage={currPage} 
+          userType={userType} 
+          setProfileUser={setProfileUser} 
+          userName={userName}
+          ></SideDrawer>
+
+
+          {currPage==="profile" && (profileUser || userName) && <div className="w-full md:w-1/2 h-full flex flex-col">
+          <ProfilePages profileUser={profileUser} userName={userName} setLoading={setLoading} setCurrPage={setCurrPage}></ProfilePages>
           </div>}
           {currPage==="chat" && <div className="w-full md:w-1/2 h-full flex flex-col">
           <Chat color={color}setColor={setColor} userName={userName} roomName={roomName}></Chat>

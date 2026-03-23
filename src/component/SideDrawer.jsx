@@ -2,7 +2,7 @@ import { useState } from "react";
 import logo1 from '../assets/logo1.png'
 import { UserType } from "../constants";
 
-export default function SideDrawer({setCurrPage,getSignOut,currPage,userType}) {
+export default function SideDrawer({ setCurrPage, getSignOut, currPage, userType, setProfileUser, userName }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -12,7 +12,7 @@ export default function SideDrawer({setCurrPage,getSignOut,currPage,userType}) {
         onClick={() => setIsOpen(true)}
         className="fixed top-4 left-4 z-50 text-white p-2 rounded-lg transition cursor-pointer"
       >
-        <i class="fa-solid fa-bars"></i>
+        <i className="fa-solid fa-bars"></i>
       </button>
 
       {/* Overlay (optional) */}
@@ -36,58 +36,61 @@ export default function SideDrawer({setCurrPage,getSignOut,currPage,userType}) {
         </div>
         <div className="flex flex-col gap-2 p-4">
 
-          <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage==='profile' && 'bg-gray-200'}`}
-          onClick={()=>{setCurrPage('profile'); setIsOpen(false);} }
+          <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage === 'profile' && 'bg-gray-200'}`}
+            onClick={() => {
+              setCurrPage('profile'); setIsOpen(false);
+              setProfileUser(userName)
+            }}
           >
-            <i class="fa-solid fa-user"></i>
+            <i className="fa-solid fa-user"></i>
             <p className="libre-baskerville-bold text-lg">Profile</p>
           </button>
 
-          <button className={`md:hidden flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage==='chat' && 'bg-gray-200'}`}
-          onClick={()=>{setCurrPage('chat'); setIsOpen(false);}}
+          <button className={`md:hidden flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage === 'chat' && 'bg-gray-200'}`}
+            onClick={() => { setCurrPage('chat'); setIsOpen(false); }}
           >
-            <i class="fa-brands fa-rocketchat"></i>
+            <i className="fa-brands fa-rocketchat"></i>
             <p className="libre-baskerville-bold text-lg">Chat</p>
           </button>
 
-          <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage==='movie' && 'bg-gray-200'}`}
-          onClick={()=>{setCurrPage('movie'); setIsOpen(false);}}
+          <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage === 'movie' && 'bg-gray-200'}`}
+            onClick={() => { setCurrPage('movie'); setIsOpen(false); }}
           >
-            <i class="fa-solid fa-film"></i>
+            <i className="fa-solid fa-film"></i>
             <p className="libre-baskerville-bold text-lg">Movies</p>
           </button>
 
-          <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage==='plan' && 'bg-gray-200'}`}
-          onClick={()=>{setCurrPage('plan'); setIsOpen(false);}}
+          <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage === 'plan' && 'bg-gray-200'}`}
+            onClick={() => { setCurrPage('plan'); setIsOpen(false); }}
           >
-            <i class="fa-solid fa-lightbulb"></i>
+            <i className="fa-solid fa-lightbulb"></i>
             <p className="libre-baskerville-bold text-lg">Plans</p>
           </button>
 
-          <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage==='plan' && 'bg-gray-200'}`}
-          onClick={()=>{setCurrPage('rooms'); setIsOpen(false);}}
+          <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage === 'plan' && 'bg-gray-200'}`}
+            onClick={() => { setCurrPage('rooms'); setIsOpen(false); }}
           >
-            <i class="fa-solid fa-house"></i>
+            <i className="fa-solid fa-house"></i>
             <p className="libre-baskerville-bold text-lg">Rooms</p>
           </button>
 
           {userType === UserType.ADMIN && <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage === 'plan' && 'bg-gray-200'}`}
             onClick={() => { setCurrPage('admin'); setIsOpen(false); }}
           >
-            <i class="fa-solid fa-lock"></i>
+            <i className="fa-solid fa-lock"></i>
             <p className="libre-baskerville-bold text-lg">Admin Panel</p>
           </button>}
 
           {userType === UserType.MODERATOR && <button className={`flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-300 cursor-pointer ${currPage === 'plan' && 'bg-gray-200'}`}
             onClick={() => { setCurrPage('moderator'); setIsOpen(false); }}
           >
-            <i class="fa-solid fa-lock"></i>
+            <i className="fa-solid fa-lock"></i>
             <p className="libre-baskerville-bold text-lg">Moderator Panel</p>
           </button>}
 
           <button className="flex justify-start gap-8 items-center p-2 rounded hover:bg-gray-200 cursor-pointer"
-          onClick={getSignOut}>
-            <i class="fa-solid fa-arrow-left" style={{ color: "#dc2626" }}></i>
+            onClick={getSignOut}>
+            <i className="fa-solid fa-arrow-left" style={{ color: "#dc2626" }}></i>
             <p className="libre-baskerville-bold text-lg text-red-600">Log Out</p>
           </button>
         </div>
