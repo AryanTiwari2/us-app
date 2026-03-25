@@ -107,7 +107,14 @@ const RoomLogin = (props) =>{
           <Chat color={color} setColor={setColor} userName={userName} roomName={roomName} setProfileUser={setProfileUser}></Chat>
           </div>}
           {currPage==="movie" && <div className="w-full md:w-1/2 h-full flex flex-col">
-          <Movies ></Movies>
+          <Movies 
+            colorKey={color} 
+            roomName={roomName} 
+            userName={userName}
+            setLoading={setLoading} 
+            getSignOut={getSignOut} 
+            userType={userType}
+            ></Movies>
           </div>}
           {currPage==="plan" && <div className="w-full md:w-1/2 h-full flex flex-col">
           <Plans ></Plans>
