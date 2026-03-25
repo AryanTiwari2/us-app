@@ -100,6 +100,7 @@ const RoomLogin = (props) =>{
           setCurrPage={setCurrPage}
           getSignOut={getSignOut} 
           setColor={setColor}
+          getUserInfo={getUserInfo}
           ></ProfilePages>
           </div>}
           {currPage==="chat" && <div className="w-full md:w-1/2 h-full flex flex-col">

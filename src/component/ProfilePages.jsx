@@ -6,7 +6,7 @@ import { colorMap } from "../constants";
 import axios from "axios";
 
 
-const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage, getSignOut, setColor }) => {
+const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage, getSignOut, setColor, getUserInfo }) => {
   const cookies = new Cookies();
   const [roomNameFromApi, setRoomNameFromApi] = useState('');
   const [userTypeFromApi, setUserTypeFromApi] = useState('');
@@ -25,6 +25,8 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage, getSignO
   const fileInputRef = useRef(null);
   const [editingSocial, setEditingSocial] = useState(null);
   const [socialValues, setSocialValues] = useState({ twitter: "", instagram: "", github: "", facebook: "" });
+  const [showRooms, setShowRooms] = useState(false);
+  const [availableRooms, setAvailableRooms] = useState([]);
 
   const socials = [
     { key: 'twitter', icon: 'fa-brands fa-twitter' },
@@ -90,6 +92,57 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage, getSignO
     }
   }
 
+  const switchToNewRoom = async (roomName) => {
+    try {
+      const token = cookies.get(cookieName.authToken);
+      const config = {
+        url: apiConfig.backendbaseUrl + apiConfig.path.switchRoom,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token
+        },
+        data: {
+          roomName: roomName
+        }
+      }
+      const response = await axios(config);
+      return response.data;
+    } catch (error) {
+      console.log(error);
+      getSignOut();
+      return;
+    }
+  }
+
+  const handleSwitchRoom = async (room) => {
+    setLoading(true);
+    const response = await switchToNewRoom(room.roomName);
+    await cookies.set(cookieName.authToken, response.token);
+    await getUserInfo();
+    await fetchUserProfileData();
+  }
+
+  const getAllRooms = async () => {
+    try {
+      const token = cookies.get(cookieName.authToken);
+      const config = {
+        url: apiConfig.backendbaseUrl + apiConfig.path.getAllRooms,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token
+        },
+      }
+      const response = await axios(config)
+      return response.data;
+    } catch (error) {
+      console.log(error);
+      getSignOut();
+      return;
+    }
+  }
+
   const updateProfile = async () => {
     if (userNameFromApi !== userName) return;
     setLoading(true);
@@ -113,7 +166,7 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage, getSignO
     const textCol = colorEntry.textColor;
     setBackgroudColor(background);
     setTextColor(textCol);
-    setColor(responseBody["themeColor"]);
+    if (userName === responseBody["username"]) setColor(responseBody["themeColor"]);
   }
 
   const setGenderOfTheUser = (gender) => {
@@ -182,7 +235,18 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage, getSignO
     const textCol = colorEntry.textColor;
     setBackgroudColor(background);
     setTextColor(textCol);
-    setColor(responseBody["themeColor"]);
+    if (userName === responseBody["username"]) setColor(responseBody["themeColor"]);
+  }
+
+
+  const getAllRoomsOfUser = async () => {
+    if (!showRooms) return
+    setLoading(true);
+    const response = await getAllRooms();
+    if (response && response.rooms) {
+      setAvailableRooms(response.rooms);
+    }
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -201,6 +265,10 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage, getSignO
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    getAllRoomsOfUser();
+  }, [showRooms]);
 
 
   return (
@@ -393,6 +461,7 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage, getSignO
             </div>
           </div>
 
+          {/* Social Media */}
           <p className="text-[24px] permanent-marker-regular mt-4" style={{ color: textColor }}>You can find me:</p>
           <div ref={popupRef} className="flex space-x-6 mt-4 mb-6 relative">
             {socials.map(({ key, icon }) => (
@@ -458,7 +527,64 @@ const ProfilePages = ({ profileUser, userName, setLoading, setCurrPage, getSignO
               </div>
             ))}
           </div>
+
+          {/* Available Rooms */}
+          {userNameFromApi === userName && <div className="relative flex flex-col justify-center items-center ml-2 mr-2 mt-4 w-full max-w-lg">
+            <h2
+              className="text-lg font-bold w-full px-6 py-2 text-center rounded-t-lg permanent-marker-light flex items-center justify-center gap-2 cursor-pointer"
+              style={{ background: textColor, color: backgroundColor }}
+              onClick={() => setShowRooms(prev => !prev)}
+            >
+              Available Rooms
+              <i className={`fa-solid ${showRooms ? 'fa-chevron-up' : 'fa-chevron-down'} text-sm`} />
+            </h2>
+            <div
+              className="w-full rounded-b-lg px-4 pb-4 pt-4"
+              style={{ background: backgroundColor, border: `1px solid ${textColor}` }}
+            >
+              {!showRooms ? (
+                <p
+                  className="text-sm permanent-marker-ultralight text-center cursor-pointer"
+                  style={{ color: textColor }}
+                  onClick={() => setShowRooms(true)}
+                >
+                  Click to see rooms...
+                </p>
+              ) : availableRooms.length === 0 ? (
+                <p className="text-sm permanent-marker-ultralight text-center" style={{ color: textColor }}>
+                  No rooms available
+                </p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {availableRooms.map((room) => {
+                    const isCurrentRoom = roomNameFromApi === room.roomName;
+                    return (
+                      <div
+                        key={room.roomId}
+                        className={`flex items-center justify-between px-4 py-2 rounded-lg transition-opacity ${isCurrentRoom ? 'cursor-default opacity-50' : 'cursor-pointer hover:opacity-80'
+                          }`}
+                        style={{ background: textColor, color: backgroundColor }}
+                        onClick={() => !isCurrentRoom && handleSwitchRoom(room)}
+                      >
+                        <span className="permanent-marker-light text-sm">{room.roomName}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="permanent-marker-ultralight text-[11px] opacity-70">
+                            {room.roomType}
+                          </span>
+                          {isCurrentRoom
+                            ? <i className="fa-solid fa-check text-[11px] opacity-70" />
+                            : <i className="fa-solid fa-arrow-right-to-bracket text-[11px] opacity-70" />
+                          }
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>}
         </div>
+
         {userTheme && userNameFromApi === userName && <ThemePicker
           backgroundColor={backgroundColor}
           textColor={textColor}
